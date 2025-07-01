@@ -26,11 +26,7 @@ TIMER_UNITS       EQU     FFF6h
 ACTIVATE_TIMER    EQU     FFF7h
 ON                EQU     1d
 OFF               EQU     0d
-POSICAO_INICIAL   EQU     8052h
-POSICAO_FANTASMA1 EQU     80f7h
-POSICAO_FANTASMA2 EQU     80A5h
-POSICAO_FANTASMA3 EQU     8123h
-
+POSICAO_INICIAL   EQU     8052h ;89C3h
 
 RND_MASK		EQU	8016h	; 1000 0000 0001 0110b
 LSB_MASK		EQU	0001h	; Mascara para testar o bit menos significativo do Random_Var
@@ -47,7 +43,7 @@ PRIME_NUMBER_2	EQU 13d
 
                 ORIG    8000h
 L1    STR '################################################################################', FIM_TEXTO
-L2    STR '#C ............        ..#####......     #########.....      .................##', FIM_TEXTO
+L2    STR '#  ............        ..#####......     #########.....      .................##', FIM_TEXTO
 L3    STR '## .##########.##.##.##..........##.................##.##  ##.##   ##.##   ##.##', FIM_TEXTO
 L4    STR '## .#        #.##.##....##..##.#.##.##....##.##.###.##.##  ##.## . ##.## . ##.##', FIM_TEXTO
 L5    STR '## .#........#.##.##.##.##  ##.#.......##.##.##  .#.##.##  ##.## . ##.## . ##.##', FIM_TEXTO
@@ -116,17 +112,17 @@ Random_var        WORD  A5A5h
 DirecaoGhost1   WORD    DOWN
 XGhost1         WORD    78d
 YGhost1         WORD    1d
-PosGhost1       WORD    POSICAO_FANTASMA1
+PosGhost1       WORD    0
 
 DirecaoGhost2   WORD    DOWN
 XGhost2         WORD    78d
 YGhost2         WORD    19d
-PosGhost2       WORD    POSICAO_FANTASMA2
+PosGhost2       WORD    0
 
 DirecaoGhost3   WORD    DOWN
 XGhost3         WORD    4d
 YGhost3         WORD    19d
-PosGhost3       WORD    POSICAO_FANTASMA3
+PosGhost3       WORD    0
 
 
 

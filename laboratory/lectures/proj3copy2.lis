@@ -28,10 +28,7 @@
 	ON                               0001         CONSTANT
 	OFF                              0000         CONSTANT
 	POSICAO_INICIAL                  8052         CONSTANT
-	POSICAO_FANTASMA1                80F7         CONSTANT
-	POSICAO_FANTASMA2                80A5         CONSTANT
-	POSICAO_FANTASMA3                8123         CONSTANT
-	RND_MASK                         1F50         CONSTANT
+	RND_MASK                         8016         CONSTANT
 	LSB_MASK                         0001         CONSTANT
 	PRIME_NUMBER_1                   000B         CONSTANT
 	PRIME_NUMBER_2                   000D         CONSTANT
