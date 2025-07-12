@@ -967,19 +967,19 @@ GhostAI:          PUSH R1
                   MOV R4, M[PacmanNovoY]  ; Pacman Y
 
                   ; Calcular diferenças
-                  SUB R2, R1  ; R2 = deltaX (PacmanX - GhostX)
-                  SUB R4, R3  ; R4 = deltaY (PacmanY - GhostY)
+                  SUB R2, R1  ; R2 =  (PacmanX - GhostX)
+                  SUB R4, R3  ; R4 =  (PacmanY - GhostY)
 
                   ; Prioridade para movimento horizontal
                   CMP R2, 0
-                  JMP.Z CheckVertical  ; Se deltaX = 0, verifica vertical
-                  JMP.P TryRight       ; Se deltaX > 0, tenta direita
-                  JMP TryLeft          ; Se deltaX < 0, tenta esquerda
+                  JMP.Z CheckVertical  ; Se  = 0, verifica vertical
+                  JMP.P TryRight       ; Se  > 0, tenta direita
+                  JMP TryLeft          ; Se  < 0, tenta esquerda
 
 CheckVertical:    CMP R4, 0
-                  JMP.Z EndGhostAI     ; Se deltaY também = 0, não move
-                  JMP.P TryDown        ; Se deltaY > 0, tenta baixo
-                  JMP TryUp            ; Se deltaY < 0, tenta cima
+                  JMP.Z EndGhostAI     ; Se  também = 0, não move
+                  JMP.P TryDown        ; Se  > 0, tenta baixo
+                  JMP TryUp            ; Se  < 0, tenta cima
 
 TryRight:        MOV R1, RIGHT
                  MOV M[DirecaoGhost1], R1
@@ -1263,19 +1263,19 @@ GhostAI2:         PUSH R1
                   MOV R4, M[PacmanNovoY]  ; Pacman Y
 
                   ; Calcular diferenças
-                  SUB R2, R1  ; R2 = deltaX (PacmanX - GhostX)
-                  SUB R4, R3  ; R4 = deltaY (PacmanY - GhostY)
+                  SUB R2, R1  ; R2 =  (PacmanX - GhostX)
+                  SUB R4, R3  ; R4 =  (PacmanY - GhostY)
 
                   ; Prioridade para movimento horizontal
                   CMP R2, 0
-                  JMP.Z CheckVertical2  ; Se deltaX = 0, verifica vertical
-                  JMP.P TryRight2       ; Se deltaX > 0, tenta direita
-                  JMP TryLeft2          ; Se deltaX < 0, tenta esquerda
+                  JMP.Z CheckVertical2  ; Se  = 0, verifica vertical
+                  JMP.P TryRight2       ; Se  > 0, tenta direita
+                  JMP TryLeft2          ; Se  < 0, tenta esquerda
 
 CheckVertical2:   CMP R4, 0
-                  JMP.Z EndGhostAI2     ; Se deltaY também = 0, não move
-                  JMP.P TryDown2        ; Se deltaY > 0, tenta baixo
-                  JMP TryUp2            ; Se deltaY < 0, tenta cima
+                  JMP.Z EndGhostAI2     ; Se  também = 0, não move
+                  JMP.P TryDown2        ; Se  > 0, tenta baixo
+                  JMP TryUp2            ; Se  < 0, tenta cima
 
 TryRight2:       MOV R1, RIGHT
                  MOV M[DirecaoGhost2], R1

@@ -110,12 +110,12 @@ random_Var        WORD  A5A5h
 ;Configurações dos Fantasmas
 ;-------------------------------------------------------------------------------
 DirecaoGhost1   WORD    DOWN
-XGhost1         WORD    78d
+XGhost1         WORD    77d
 YGhost1         WORD    1d
 PosGhost1       WORD    0
 
 DirecaoGhost2   WORD    DOWN
-XGhost2         WORD    78d
+XGhost2         WORD    77d
 YGhost2         WORD    19d
 PosGhost2       WORD    0
 
@@ -213,9 +213,7 @@ Timer:            PUSH R1
 ;------------------------------------------------------------------------------
 ;Função de colisão com o fantasmas
 ;------------------------------------------------------------------------------
-;------------------------------------------------------------------------------
-; Função de colisão corrigida
-;------------------------------------------------------------------------------
+
 ColisaoGhostPacman:     PUSH R1
                         PUSH R2
                         PUSH R3
@@ -311,7 +309,7 @@ printWinLose:   PUSH    R1
                 MOV     M[ColumnIndex],R1
                 MOV     R1, M[ flagWin ]
                 CMP     R1, 1d
-                JMP.NZ  Perdeu 
+                JMP.NZ  Perdeu
                 MOV     R1, Vitoria
                 JMP     Continue
 
@@ -742,7 +740,6 @@ PontoBaixo:PUSH R1
 
 aumentaDezena:PUSH R1
               PUSH R2
-
               MOV R1, 48d
               MOV M[Unidade],R1
               INC M[Dezena]
@@ -750,7 +747,6 @@ aumentaDezena:PUSH R1
               MOV R1,M[Dezena]
               CMP R1,R2
               CALL.Z aumentaCentena
-
               POP R2
               POP R1
               RET
@@ -765,6 +761,11 @@ aumentaCentena:PUSH R1
                POP R2
                POP R1
                RET
+
+
+
+
+
 
 
 
@@ -806,7 +807,6 @@ MovimentaBaixoGhost1:PUSH R1
 
                      MOV R1, M[YGhost1]
                      MOV R2, M[XGhost1]
-
                      SHL R1, 8d ;Escrever na tela espaço ou comida
                      OR R1,R2                  
                      MOV M[CURSOR], R1
@@ -836,7 +836,6 @@ MovimentaCimaGhost1:PUSH R1
 
                      MOV R1, M[YGhost1]
                      MOV R2, M[XGhost1]
-
                      SHL R1, 8d ;Escrever na tela espaço ou comida
                      OR R1,R2                  
                      MOV M[CURSOR], R1
@@ -866,7 +865,6 @@ MovimentaDireitaGhost1:PUSH R1
 
                      MOV R1, M[YGhost1]
                      MOV R2, M[XGhost1]
-
                      SHL R1, 8d
                      OR R1,R2                  
                      MOV M[CURSOR], R1
@@ -896,7 +894,6 @@ MovimentaEsquerdaGhost1:PUSH R1
 
                      MOV R1, M[YGhost1]
                      MOV R2, M[XGhost1]
-
                      SHL R1, 8d ;Escrever na tela espaço ou comida
                      OR R1,R2                  
                      MOV M[CURSOR], R1
@@ -971,7 +968,7 @@ VerificaEsquerdaGhost1:PUSH R1
 ParedeGhost:PUSH R5 
             MOV R5, STOP
             MOV M[DirecaoGhost1],R5 
-            CALL Random
+            CALL RandomV1
             CALL VerificaMovimentoGhost1
             POP R5
             RET
@@ -986,17 +983,16 @@ ghostInteligence: PUSH R1
                   PUSH R3
                   PUSH R4
 
-                  ;pegar posições atuais
+
                   MOV R1, M[XGhost1]
                   MOV R2, M[PacmanNovoX]
                   MOV R3, M[YGhost1]
                   MOV R4, M[PacmanNovoY]
 
-                  ;calcular as diferenças
-                  SUB R2, R1                    ; R2 = deltaX (PacmanX - GhostX)
-                  SUB R4, R3                    ; R4 = deltaY (PacmanY - GhostY)
+                  SUB R2, R1                    ; R2 =  (PacmanX - GhostX)
+                  SUB R4, R3                    ; R4 =  (PacmanY - GhostY)
 
-                  ;prioridade para movimento horizontal
+                  ;priorizar o movimento horizontal
                   CMP R2, 0
                   JMP.Z CheckVertical           ; Se x = 0, verificar vertical
                   JMP.P TryRight                ; Se x > 0, tenta direita
@@ -1048,7 +1044,7 @@ EndghostInteligence:      POP R4
 ;------------------------------------------------------------------------------
 ;Random (Gerar número aleatório)
 ;------------------------------------------------------------------------------
-Random:         PUSH    R1
+RandomV1:         PUSH    R1
                 PUSH    R2
                 MOV     R1, LSB_MASK
                 AND     R1, M[random_Var]
@@ -1262,17 +1258,16 @@ ghostInteligence2: PUSH R1
                   PUSH R3
                   PUSH R4
 
-                  ;pegar posições atuais
+
                   MOV R1, M[XGhost2]
                   MOV R2, M[PacmanNovoX]
                   MOV R3, M[YGhost2]
                   MOV R4, M[PacmanNovoY]
 
-                  ;calcular as diferenças
-                  SUB R2, R1                    ; R2 = deltaX (PacmanX - GhostX)
-                  SUB R4, R3                    ; R4 = deltaY (PacmanY - GhostY)
+                  SUB R2, R1                    ; R2 =  (PacmanX - GhostX)
+                  SUB R4, R3                    ; R4 =  (PacmanY - GhostY)
 
-                  ;prioridade para movimento horizontal
+                  ;priorizar o movimento horizontal
                   CMP R2, 0
                   JMP.Z CheckVertical2           ; Se x = 0, verificar vertical
                   JMP.P TryRight2                ; Se x > 0, tenta direita
@@ -1543,17 +1538,16 @@ ghostInteligence3: PUSH R1
                   PUSH R3
                   PUSH R4
 
-                  ;pegar posições atuais
+
                   MOV R1, M[XGhost3]
                   MOV R2, M[PacmanNovoX]
                   MOV R3, M[YGhost3]
                   MOV R4, M[PacmanNovoY]
 
-                  ;calcular as diferenças
-                  SUB R2, R1                    ; R2 = deltaX (PacmanX - GhostX)
-                  SUB R4, R3                    ; R4 = deltaY (PacmanY - GhostY)
+                  SUB R2, R1                    ; R2 =  (PacmanX - GhostX)
+                  SUB R4, R3                    ; R4 =  (PacmanY - GhostY)
 
-                  ;prioridade para movimento horizontal
+                  ;priorizar o movimento horizontal
                   CMP R2, 0
                   JMP.Z CheckVertical3           ; Se x = 0, verificar vertical
                   JMP.P TryRight3                ; Se x > 0, tenta direita
@@ -1630,6 +1624,12 @@ RandomDirection3:     ROR     M[random_Var], 1
 
 
 
+
+
+
+                                ;-----------------------------------------------
+                                ;                    JOGO                      -
+                                ;-----------------------------------------------
 
 
 ;------------------------------------------------------------------------------
@@ -1761,14 +1761,14 @@ Main:           ENI
                 MOV M[IO_WRITE], R1
 
                 ; --- Inicialização Fantasma 2 ---
-                MOV R1, M[XGhost2]          ; Coluna Ghost2
-                MOV R2, M[YGhost2]          ; Linha Ghost2
-                MOV R3, 81d                 ; Largura do mapa
-                MUL R2, R3                  ; Calcula offset Y
-                ADD R3, R1                  ; Adiciona offset X
-                MOV R1, L1                  ; Endereço base
-                ADD R1, R3                  ; Posição final
-                MOV M[PosGhost2], R1        ; Salva posição
+                MOV R1, M[XGhost2]
+                MOV R2, M[YGhost2]
+                MOV R3, 81d
+                MUL R2, R3
+                ADD R3, R1
+                MOV R1, L1
+                ADD R1, R3
+                MOV M[PosGhost2], R1
 
                 ; Desenha Ghost2 inicial
                 MOV R1, M[YGhost2]
@@ -1799,7 +1799,7 @@ Main:           ENI
                 MOV M[IO_WRITE], R1
 
                 ; Configura o timer
-                MOV R1, 5d
+                MOV R1, 10d
                 MOV M[TIMER_UNITS], R1
                 MOV R1, ON
                 MOV M[ACTIVATE_TIMER], R1

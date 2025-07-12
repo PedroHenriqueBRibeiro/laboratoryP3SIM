@@ -1,0 +1,24 @@
+L1    STR '################################################################################', FIM_TEXTO
+L2    STR '#                                                                             ##', FIM_TEXTO
+L3    STR '##                                                                            ##', FIM_TEXTO
+L4    STR '##                                                                            ##', FIM_TEXTO
+L5    STR '##                                                                            ##', FIM_TEXTO
+L6    STR '##                                                                            ##', FIM_TEXTO
+L7    STR '##                                                                            ##', FIM_TEXTO
+L8    STR '##                                                                            ##', FIM_TEXTO
+L9    STR '##                                                                            ##', FIM_TEXTO
+L10   STR '##                                                                            ##', FIM_TEXTO
+L11   STR '##                                                                            ##', FIM_TEXTO
+L12   STR '##                                       .                                    ##', FIM_TEXTO
+L13   STR '##                                                                            ##', FIM_TEXTO
+L14   STR '##                                                                            ##', FIM_TEXTO
+L15   STR '##                                                                            ##', FIM_TEXTO
+L16   STR '##                                                                            ##', FIM_TEXTO
+L17   STR '##                                                                            ##', FIM_TEXTO
+L18   STR '##                                                                            ##', FIM_TEXTO
+L19   STR '##                                                                            ##', FIM_TEXTO
+L20   STR '##                                                                            ##', FIM_TEXTO
+L21   STR '##                                                                            ##', FIM_TEXTO
+L22   STR '################################################################################', FIM_TEXTO
+L23   STR '################################################################################', FIM_TEXTO
+L24   STR 'SCORE:  000 ########################################################### LIFES :3', FIM_MAPA
