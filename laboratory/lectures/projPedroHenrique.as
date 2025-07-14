@@ -29,7 +29,7 @@ OFF               EQU     0d
 POSICAO_INICIAL   EQU     8052h ;89C3h
 
 RND_MASK		EQU	8016h	; 1000 0000 0001 0110b
-LSB_MASK		EQU	0001h	; Mascara para testar o bit menos significativo do Random_Var
+LSB_MASK		EQU	0001h	; Mascara para testar o bit menos significativo do random_Var
 PRIME_NUMBER_1	EQU 11d
 PRIME_NUMBER_2	EQU 13d
 
@@ -104,18 +104,18 @@ flagWin           WORD  0d
 Vidas             WORD  51d
 linha_vida        WORD  23d
 coluna_vida       WORD  79d
-Random_var        WORD  A5A5h
+random_Var        WORD  A5A5h
 
 ;-------------------------------------------------------------------------------
 ;Configurações dos Fantasmas
 ;-------------------------------------------------------------------------------
 DirecaoGhost1   WORD    DOWN
-XGhost1         WORD    78d
+XGhost1         WORD    77d
 YGhost1         WORD    1d
 PosGhost1       WORD    0
 
 DirecaoGhost2   WORD    DOWN
-XGhost2         WORD    78d
+XGhost2         WORD    77d
 YGhost2         WORD    19d
 PosGhost2       WORD    0
 
@@ -152,8 +152,8 @@ Timer:            PUSH R1
 
                   CALL PrintPontos 
                   
-                  ; --- Controle do Fantasma 1 ---
-                  CALL GhostAI
+                  ;controle fantasma 1
+                  CALL ghostInteligence
                   MOV R2, M[DirecaoGhost1]
                   CMP R2, DOWN
                   CALL.Z MovimentaBaixoGhost1
@@ -164,8 +164,8 @@ Timer:            PUSH R1
                   CMP R2, LEFT
                   CALL.Z MovimentaEsquerdaGhost1
                   
-                  ; --- Controle do Fantasma 2 ---
-                  CALL GhostAI2
+                  ;controle fantasma 2
+                  CALL ghostInteligence2
                   MOV R2, M[DirecaoGhost2]
                   CMP R2, DOWN
                   CALL.Z MovimentaBaixoGhost2
@@ -177,8 +177,8 @@ Timer:            PUSH R1
                   CALL.Z MovimentaEsquerdaGhost2
 
 
-                  ; --- Controle do Fantasma 3 ---
-                  CALL GhostAI3
+                  ;controle fantasma 3
+                  CALL ghostInteligence3
                   MOV R2, M[DirecaoGhost3]
                   CMP R2, DOWN
                   CALL.Z MovimentaBaixoGhost3
@@ -189,10 +189,10 @@ Timer:            PUSH R1
                   CMP R2, LEFT
                   CALL.Z MovimentaEsquerdaGhost3
                   
-                  ; --- Verificação de colisões ---
+
                   CALL ColisaoGhostPacman
                   
-                  ; --- Controle do Pacman ---
+                  ;controle pacman
                   CALL VerificaMovimento
                   MOV R1, M[PacmanDirection]
                   CMP R1, RIGHT
@@ -213,41 +213,43 @@ Timer:            PUSH R1
 ;------------------------------------------------------------------------------
 ;Função de colisão com o fantasmas
 ;------------------------------------------------------------------------------
+
 ColisaoGhostPacman:     PUSH R1
                         PUSH R2
                         PUSH R3
+                        PUSH R4
+
                         MOV R1, M[PacmanNovoX]
+                        MOV R3, M[PacmanNovoY]
+
+                        ;verificar colisão com Ghost1
                         MOV R2, M[XGhost1]
                         CMP R1, R2
                         JMP.NZ checkGhost2
-                        MOV R1, M[PacmanNovoY]
                         MOV R2, M[YGhost1]
-                        CMP R1, R2
+                        CMP R3, R2
                         JMP.Z colisaoDetectada
 
-checkGhost2:            MOV R1, M[PacmanNovoX]
-                        MOV R2, M[XGhost2]
+checkGhost2:            MOV R2, M[XGhost2]
                         CMP R1, R2
                         JMP.NZ checkGhost3
-                        MOV R1, M[PacmanNovoY]
                         MOV R2, M[YGhost2]
-                        CMP R1, R2
+                        CMP R3, R2
                         JMP.Z colisaoDetectada
 
-checkGhost3:            MOV R1, M[PacmanNovoX]
-                        MOV R2, M[XGhost3]
+checkGhost3:            MOV R2, M[XGhost3]
                         CMP R1, R2
                         JMP.NZ notDead
-                        MOV R1, M[PacmanNovoY]
                         MOV R2, M[YGhost3]
-                        CMP R1, R2
+                        CMP R3, R2
                         JMP.NZ notDead
 
 colisaoDetectada:       CALL ResetMapa
                         DEC M[Vidas]
                         CALL diminuirVida
 
-notDead:                POP R3
+notDead:                POP R4
+                        POP R3
                         POP R2
                         POP R1
                         RET
@@ -257,12 +259,12 @@ notDead:                POP R3
 
 checkWin: PUSH R1 
               
-              MOV R1, M[Vidas] ;Verifica vida = 0
+              MOV R1, M[Vidas] ;verifica vida = 0
               CMP R1, 48d
               
-              JMP.Z Lose 
+              JMP.Z Lose
               
-              MOV R1, M[Centena]   ;Verifica pontuação = 100
+              MOV R1, M[Centena]   ;verifica pontuação = 100
               CMP R1, 49d
               JMP.NZ NaoGanhou
               
@@ -279,9 +281,9 @@ checkWin: PUSH R1
               POP R1
               RET 
 
-Lose:POP R1
-     CALL printWinLose  
-     JMP Halt
+Lose:         POP R1
+              CALL printWinLose  
+              JMP Halt
 
 NaoGanhou:POP R1
           RET  
@@ -293,7 +295,6 @@ Win:    POP R1
         MOV M[flagWin],R1
         CALL printWinLose
         POP R1
-        
         JMP Halt
 
 ;------------------------------------------------------------------------------
@@ -307,7 +308,7 @@ printWinLose:   PUSH    R1
                 MOV     M[ColumnIndex],R1
                 MOV     R1, M[ flagWin ]
                 CMP     R1, 1d
-                JMP.NZ  Perdeu 
+                JMP.NZ  Perdeu
                 MOV     R1, Vitoria
                 JMP     Continue
 
@@ -384,7 +385,7 @@ ResetMapa: PUSH R1
 ;Funções de movimentação do pacman
 ;------------------------------------------------------------------------------
 
-MoverDireita:     PUSH R1
+MoverDireita:     PUSH R1 ;atualiza a direção na interrupção
                   
                   MOV R1, RIGHT
                   MOV M[PacmanDirection], R1
@@ -411,14 +412,14 @@ MoverCima:        PUSH R1
 
                   RTI
 
-MoverBaixo: PUSH R1
-                  
-           MOV R1, DOWN
-           MOV M[PacmanDirection], R1
+MoverBaixo:       PUSH R1
+                        
+                  MOV R1, DOWN
+                  MOV M[PacmanDirection], R1
 
-           POP R1
+                  POP R1
 
-           RTI
+                  RTI
 
 MovimentaDireita: PUSH R1
                   PUSH R2
@@ -664,8 +665,6 @@ Ponto: PUSH R1
        CALL.Z PontoCima
        CMP R5, DOWN
        CALL.Z PontoBaixo
-
-
        MOV R3, 58d
        MOV R4, M[Unidade]
 
@@ -675,7 +674,6 @@ Ponto: PUSH R1
        CALL PrintPontos
 
        SHL R1, 3
-
 
        POP R5
        POP R4
@@ -738,7 +736,6 @@ PontoBaixo:PUSH R1
 
 aumentaDezena:PUSH R1
               PUSH R2
-
               MOV R1, 48d
               MOV M[Unidade],R1
               INC M[Dezena]
@@ -746,7 +743,6 @@ aumentaDezena:PUSH R1
               MOV R1,M[Dezena]
               CMP R1,R2
               CALL.Z aumentaCentena
-
               POP R2
               POP R1
               RET
@@ -761,6 +757,11 @@ aumentaCentena:PUSH R1
                POP R2
                POP R1
                RET
+
+
+
+
+
 
 
 
@@ -802,7 +803,6 @@ MovimentaBaixoGhost1:PUSH R1
 
                      MOV R1, M[YGhost1]
                      MOV R2, M[XGhost1]
-
                      SHL R1, 8d ;Escrever na tela espaço ou comida
                      OR R1,R2                  
                      MOV M[CURSOR], R1
@@ -832,7 +832,6 @@ MovimentaCimaGhost1:PUSH R1
 
                      MOV R1, M[YGhost1]
                      MOV R2, M[XGhost1]
-
                      SHL R1, 8d ;Escrever na tela espaço ou comida
                      OR R1,R2                  
                      MOV M[CURSOR], R1
@@ -862,7 +861,6 @@ MovimentaDireitaGhost1:PUSH R1
 
                      MOV R1, M[YGhost1]
                      MOV R2, M[XGhost1]
-
                      SHL R1, 8d
                      OR R1,R2                  
                      MOV M[CURSOR], R1
@@ -892,7 +890,6 @@ MovimentaEsquerdaGhost1:PUSH R1
 
                      MOV R1, M[YGhost1]
                      MOV R2, M[XGhost1]
-
                      SHL R1, 8d ;Escrever na tela espaço ou comida
                      OR R1,R2                  
                      MOV M[CURSOR], R1
@@ -967,95 +964,94 @@ VerificaEsquerdaGhost1:PUSH R1
 ParedeGhost:PUSH R5 
             MOV R5, STOP
             MOV M[DirecaoGhost1],R5 
-            CALL Random
+            CALL RandomV1
             CALL VerificaMovimentoGhost1
             POP R5
             RET
 
 
 ;------------------------------------------------------------------------------
-; GhostAI
+; ghostInteligence
 ; Função para perseguir o Pacman         
 ;------------------------------------------------------------------------------
-GhostAI:          PUSH R1
+ghostInteligence: PUSH R1
                   PUSH R2
                   PUSH R3
                   PUSH R4
 
-                  ; Obter posições atuais
-                  MOV R1, M[XGhost1]      ; Fantasma X
-                  MOV R2, M[PacmanNovoX]  ; Pacman X
-                  MOV R3, M[YGhost1]      ; Fantasma Y
-                  MOV R4, M[PacmanNovoY]  ; Pacman Y
 
-                  ; Calcular diferenças
-                  SUB R2, R1  ; R2 =  (PacmanX - GhostX)
-                  SUB R4, R3  ; R4 =  (PacmanY - GhostY)
+                  MOV R1, M[XGhost1]
+                  MOV R2, M[PacmanNovoX]
+                  MOV R3, M[YGhost1]
+                  MOV R4, M[PacmanNovoY]
 
-                  ; Prioridade para movimento horizontal
+                  SUB R2, R1                    ;R2=PacmanX - GhostX
+                  SUB R4, R3                    ;R4=PacmanY - GhostY
+
+                  ;priorizar o movimento horizontal
                   CMP R2, 0
-                  JMP.Z CheckVertical  ; Se  = 0, verifica vertical
-                  JMP.P TryRight       ; Se  > 0, tenta direita
-                  JMP TryLeft          ; Se  < 0, tenta esquerda
+                  JMP.Z CheckVertical           ;se x = 0 verificar vertical
+                  JMP.P TryRight                ;se x > 0 tenta direita
+                  JMP TryLeft                   ;se x < 0 tenta esquerda
 
 CheckVertical:    CMP R4, 0
-                  JMP.Z EndGhostAI     ; Se  também = 0, não move
-                  JMP.P TryDown        ; Se  > 0, tenta baixo
-                  JMP TryUp            ; Se  < 0, tenta cima
+                  JMP.Z EndghostInteligence    ;se o y também = 0  não move
+                  JMP.P TryDown                ;se y > 0 tenta baixo
+                  JMP TryUp                    ;se y < 0 tenta cima
 
 TryRight:        MOV R1, RIGHT
                  MOV M[DirecaoGhost1], R1
                  CALL VerificaMovimentoGhost1
                  MOV R1, M[DirecaoGhost1]
                  CMP R1, STOP
-                 JMP.NZ EndGhostAI
-                 JMP CheckVertical     ; Se não pode ir para direita, tenta vertical
+                 JMP.NZ EndghostInteligence
+                 JMP CheckVertical             ;se nao puder ir pra direita tenta vertical
 
 TryLeft:         MOV R1, LEFT
                  MOV M[DirecaoGhost1], R1
                  CALL VerificaMovimentoGhost1
                  MOV R1, M[DirecaoGhost1]
                  CMP R1, STOP
-                 JMP.NZ EndGhostAI
-                 JMP CheckVertical     ; Se não pode ir para esquerda, tenta vertical
+                 JMP.NZ EndghostInteligence
+                 JMP CheckVertical             ; se nao puder ir pra esquerda tenta vertical
 
 TryDown:         MOV R1, DOWN
                  MOV M[DirecaoGhost1], R1
                  CALL VerificaMovimentoGhost1
                  MOV R1, M[DirecaoGhost1]
                  CMP R1, STOP
-                 JMP.NZ EndGhostAI
-                 JMP TryRight         ; Se não pode ir para baixo, tenta direita
+                 JMP.NZ EndghostInteligence
+                 JMP TryRight                    ; se nao puder ir pra baixo, tenta direita
 
 TryUp:           MOV R1, UP
                  MOV M[DirecaoGhost1], R1
                  CALL VerificaMovimentoGhost1
                  MOV R1, M[DirecaoGhost1]
                  CMP R1, STOP
-                 JMP.NZ EndGhostAI
-                 JMP TryLeft           ; Se não pode ir para cima, tenta esquerda
+                 JMP.NZ EndghostInteligence
+                 JMP TryLeft                    ; se nao puder ir pra cima tenta esquerda
 
-EndGhostAI:      POP R4
-                 POP R3
-                 POP R2
-                 POP R1
-                 RET
+EndghostInteligence:      POP R4
+                          POP R3
+                          POP R2
+                          POP R1
+                          RET
 
 ;------------------------------------------------------------------------------
 ;Random (Gerar número aleatório)
 ;------------------------------------------------------------------------------
-Random:         PUSH    R1
+RandomV1:       PUSH    R1
                 PUSH    R2
                 MOV     R1, LSB_MASK
-                AND     R1, M[Random_var]
+                AND     R1, M[random_Var]
                 BR.Z    RandomDirection
                 MOV     R1, RND_MASK
-                XOR     M[Random_var], R1
+                XOR     M[random_Var], R1
 
-RandomDirection:     ROR     M[Random_var], 1
+RandomDirection:     ROR     M[random_Var], 1
                      
                 MOV     R2, 4d
-                MOV     R1, M[ Random_var]
+                MOV     R1, M[ random_Var]
                 DIV     R1, R2                  ;Dividir por 4, para cada direção (up, down, left, right)
                 MOV     M[ DirecaoGhost1 ], R2  ;O resto da divisão é um valor entre 0 e 3
 
@@ -1077,9 +1073,7 @@ RandomDirection:     ROR     M[Random_var], 1
 
 VerificaMovimentoGhost2:PUSH R1 
                         PUSH R2 
-
                         MOV R1, M[DirecaoGhost2]
-
                         CMP R1, DOWN  
                         CALL.Z VerificaBaixoGhost2
                         CMP R1, UP
@@ -1088,17 +1082,14 @@ VerificaMovimentoGhost2:PUSH R1
                         CALL.Z VerificaDireitaGhost2
                         CMP R1,LEFT
                         CALL.Z VerificaEsquerdaGhost2
-                   
                         POP R2
                         POP R1
                         RET
 
 MovimentaBaixoGhost2:PUSH R1
                      PUSH R2
-
                      MOV R1, M[YGhost2]
                      MOV R2, M[XGhost2]
-
                      SHL R1, 8d ;Escrever na tela espaço ou comida
                      OR R1,R2                  
                      MOV M[CURSOR], R1
@@ -1110,7 +1101,6 @@ MovimentaBaixoGhost2:PUSH R1
                      MOV R1,M[PosGhost2]
                      ADD R1,81d
                      MOV M[PosGhost2],R1
-
                      MOV R1, M[YGhost2] 
                      MOV R2, M[XGhost2]
                      SHL R1, 8d
@@ -1118,17 +1108,14 @@ MovimentaBaixoGhost2:PUSH R1
                      MOV M[CURSOR], R1
                      MOV R1,'V'
                      MOV M[IO_WRITE],R1
-
                      POP R2
                      POP R1
                      RET
 
 MovimentaCimaGhost2:PUSH R1
                      PUSH R2
-
                      MOV R1, M[YGhost2]
                      MOV R2, M[XGhost2]
-
                      SHL R1, 8d ;Escrever na tela espaço ou comida
                      OR R1,R2                  
                      MOV M[CURSOR], R1
@@ -1140,7 +1127,6 @@ MovimentaCimaGhost2:PUSH R1
                      MOV R1,M[PosGhost2]
                      SUB R1,81d
                      MOV M[PosGhost2],R1
-
                      MOV R1, M[YGhost2]
                      MOV R2, M[XGhost2]
                      SHL R1, 8d
@@ -1148,17 +1134,14 @@ MovimentaCimaGhost2:PUSH R1
                      MOV M[CURSOR], R1
                      MOV R1,'V'
                      MOV M[IO_WRITE],R1
-
                      POP R2
                      POP R1
                      RET
 
 MovimentaDireitaGhost2:PUSH R1
                        PUSH R2
-
                      MOV R1, M[YGhost2]
                      MOV R2, M[XGhost2]
-
                      SHL R1, 8d
                      OR R1,R2                  
                      MOV M[CURSOR], R1
@@ -1166,11 +1149,11 @@ MovimentaDireitaGhost2:PUSH R1
                      MOV R1,M[R2]
                      MOV M[IO_WRITE],R1                     
 
+
                      INC M[XGhost2]
                      MOV R1,M[PosGhost2]
                      ADD R1,1d
                      MOV M[PosGhost2],R1
-
                      MOV R1, M[YGhost2]
                      MOV R2, M[XGhost2]
                      SHL R1, 8d
@@ -1178,17 +1161,14 @@ MovimentaDireitaGhost2:PUSH R1
                      MOV M[CURSOR], R1
                      MOV R1,'V'
                      MOV M[IO_WRITE],R1
-
                      POP R2
                      POP R1
                      RET
 
 MovimentaEsquerdaGhost2:PUSH R1
                         PUSH R2
-
                      MOV R1, M[YGhost2]
                      MOV R2, M[XGhost2]
-
                      SHL R1, 8d ;Escrever na tela espaço ou comida
                      OR R1,R2                  
                      MOV M[CURSOR], R1
@@ -1196,11 +1176,11 @@ MovimentaEsquerdaGhost2:PUSH R1
                      MOV R1,M[R2]
                      MOV M[IO_WRITE],R1                                  
 
+
                      DEC M[XGhost2]
                      MOV R1,M[PosGhost2]
                      DEC R1
                      MOV M[PosGhost2],R1
-
                      MOV R1, M[YGhost2]
                      MOV R2, M[XGhost2]
                      SHL R1, 8d
@@ -1208,14 +1188,12 @@ MovimentaEsquerdaGhost2:PUSH R1
                      MOV M[CURSOR], R1
                      MOV R1,'V'
                      MOV M[IO_WRITE],R1
-
                      POP R2
                      POP R1
                      RET
 
 VerificaBaixoGhost2:PUSH R1
                    PUSH R2
-                  
                    MOV R1, M[PosGhost2]
                    ADD R1, 81d
                    MOV R1, M[R1]
@@ -1237,8 +1215,7 @@ VerificaCimaGhost2:PUSH R1
                    RET 
 
 VerificaDireitaGhost2:PUSH R1
-                   PUSH R2
-                  
+                   PUSH R2                 
                    MOV R1, M[PosGhost2]
                    INC R1
                    MOV R1, M[R1]
@@ -1249,8 +1226,7 @@ VerificaDireitaGhost2:PUSH R1
                    RET 
 
 VerificaEsquerdaGhost2:PUSH R1
-                       PUSH R2
-                  
+                       PUSH R2                 
                        MOV R1, M[PosGhost2]
                        DEC R1
                        MOV R1, M[R1]
@@ -1270,72 +1246,72 @@ ParedeGhost2:   PUSH R5
                 RET
 
 ;------------------------------------------------------------------------------
-; GhostAI2
+; ghostInteligence2
 ; Função para perseguir o Pacman
 ;------------------------------------------------------------------------------
-GhostAI2:         PUSH R1
-                  PUSH R2
-                  PUSH R3
-                  PUSH R4
+ghostInteligence2:  PUSH R1
+                    PUSH R2
+                    PUSH R3
+                    PUSH R4
 
-                  ; Obter posições atuais
-                  MOV R1, M[XGhost2]      ; Fantasma X
-                  MOV R2, M[PacmanNovoX]  ; Pacman X
-                  MOV R3, M[YGhost2]      ; Fantasma Y
-                  MOV R4, M[PacmanNovoY]  ; Pacman Y
 
-                  ; Calcular diferenças
-                  SUB R2, R1  ; R2 =  (PacmanX - GhostX)
-                  SUB R4, R3  ; R4 =  (PacmanY - GhostY)
+                  MOV R1, M[XGhost2]
+                  MOV R2, M[PacmanNovoX]
+                  MOV R3, M[YGhost2]
+                  MOV R4, M[PacmanNovoY]
 
-                  ; Prioridade para movimento horizontal
+                  SUB R2, R1                    ;R2=PacmanX - GhostX
+                  SUB R4, R3                    ;R4=PacmanY - GhostY
+
+                  ;priorizar o movimento horizontal
                   CMP R2, 0
-                  JMP.Z CheckVertical2  ; Se  = 0, verifica vertical
-                  JMP.P TryRight2       ; Se  > 0, tenta direita
-                  JMP TryLeft2          ; Se  < 0, tenta esquerda
+                  JMP.Z CheckVertical2           ;se x = 0 verificar vertical
+                  JMP.P TryRight2                ;se x > 0 tenta direita
+                  JMP TryLeft2                   ;se x < 0 tenta esquerda
 
 CheckVertical2:   CMP R4, 0
-                  JMP.Z EndGhostAI2     ; Se  também = 0, não move
-                  JMP.P TryDown2        ; Se  > 0, tenta baixo
-                  JMP TryUp2            ; Se  < 0, tenta cima
+                  JMP.Z EndghostInteligence2    ;se o y também = 0  não move
+                  JMP.P TryDown2                ;se y > 0 tenta baixo
+                  JMP TryUp2                    ;se y < 0 tenta cima
 
 TryRight2:       MOV R1, RIGHT
                  MOV M[DirecaoGhost2], R1
                  CALL VerificaMovimentoGhost2
                  MOV R1, M[DirecaoGhost2]
                  CMP R1, STOP
-                 JMP.NZ EndGhostAI2
-                 JMP CheckVertical2     ; Se não pode ir para direita, tenta vertical
+                 JMP.NZ EndghostInteligence2
+                 JMP CheckVertical2             ;se nao puder ir pra direita tenta vertical
 
 TryLeft2:        MOV R1, LEFT
                  MOV M[DirecaoGhost2], R1
                  CALL VerificaMovimentoGhost2
                  MOV R1, M[DirecaoGhost2]
                  CMP R1, STOP
-                 JMP.NZ EndGhostAI2
-                 JMP CheckVertical2     ; Se não pode ir para esquerda, tenta vertical
+                 JMP.NZ EndghostInteligence2
+                 JMP CheckVertical2             ; se nao puder ir pra esquerda tenta vertical
 
 TryDown2:        MOV R1, DOWN
                  MOV M[DirecaoGhost2], R1
                  CALL VerificaMovimentoGhost2
                  MOV R1, M[DirecaoGhost2]
                  CMP R1, STOP
-                 JMP.NZ EndGhostAI2
-                 JMP TryRight2         ; Se não pode ir para baixo, tenta direita
+                 JMP.NZ EndghostInteligence2
+                 JMP TryRight2                   ; se nao puder ir pra baixo, tenta direita
 
 TryUp2:          MOV R1, UP
                  MOV M[DirecaoGhost2], R1
                  CALL VerificaMovimentoGhost2
                  MOV R1, M[DirecaoGhost2]
                  CMP R1, STOP
-                 JMP.NZ EndGhostAI2
-                 JMP TryLeft2           ; Se não pode ir para cima, tenta esquerda
+                 JMP.NZ EndghostInteligence2
+                 JMP TryLeft2                    ; se nao puder ir pra cima tenta esquerda
 
-EndGhostAI2:      POP R4
-                 POP R3
-                 POP R2
-                 POP R1
-                 RET
+EndghostInteligence2:       POP R4
+                            POP R3
+                            POP R2
+                            POP R1
+                            RET
+
 
 
 ;------------------------------------------------------------------------------
@@ -1344,15 +1320,15 @@ EndGhostAI2:      POP R4
 Random2:        PUSH    R1
                 PUSH    R2
                 MOV     R1, LSB_MASK
-                AND     R1, M[Random_var]
+                AND     R1, M[random_Var]
                 BR.Z    RandomDirection2
                 MOV     R1, RND_MASK
-                XOR     M[Random_var], R1
+                XOR     M[random_Var], R1
 
-RandomDirection2:     ROR     M[Random_var], 1
+RandomDirection2:     ROR     M[random_Var], 1
                      
                 MOV     R2, 4d
-                MOV     R1, M[ Random_var]
+                MOV     R1, M[ random_Var]
                 DIV     R1, R2                  ;Dividir por 4, para cada direção (up, down, left, right)
                 MOV     M[ DirecaoGhost2 ], R2  ;O resto da divisão é um valor entre 0 e 3
 
@@ -1375,9 +1351,7 @@ RandomDirection2:     ROR     M[Random_var], 1
 
 VerificaMovimentoGhost3:PUSH R1 
                         PUSH R2 
-
                         MOV R1, M[DirecaoGhost3]
-
                         CMP R1, DOWN  
                         CALL.Z VerificaBaixoGhost3
                         CMP R1, UP
@@ -1386,29 +1360,26 @@ VerificaMovimentoGhost3:PUSH R1
                         CALL.Z VerificaDireitaGhost3
                         CMP R1,LEFT
                         CALL.Z VerificaEsquerdaGhost3
-                   
                         POP R2
                         POP R1
                         RET
 
 MovimentaBaixoGhost3:PUSH R1
                      PUSH R2
-
                      MOV R1, M[YGhost3]
                      MOV R2, M[XGhost3]
-
                      SHL R1, 8d ;Escrever na tela espaço ou comida
                      OR R1,R2                  
                      MOV M[CURSOR], R1
                      MOV R2,M[PosGhost3]
                      MOV R1,M[R2]
                      MOV M[IO_WRITE],R1
-
                      INC M[YGhost3]
                      MOV R1,M[PosGhost3]
+
+
                      ADD R1,81d
                      MOV M[PosGhost3],R1
-
                      MOV R1, M[YGhost3] 
                      MOV R2, M[XGhost3]
                      SHL R1, 8d
@@ -1416,17 +1387,14 @@ MovimentaBaixoGhost3:PUSH R1
                      MOV M[CURSOR], R1
                      MOV R1,'V'
                      MOV M[IO_WRITE],R1
-
                      POP R2
                      POP R1
                      RET
 
 MovimentaCimaGhost3: PUSH R1
                      PUSH R2
-
                      MOV R1, M[YGhost3]
                      MOV R2, M[XGhost3]
-
                      SHL R1, 8d ;Escrever na tela espaço ou comida
                      OR R1,R2                  
                      MOV M[CURSOR], R1
@@ -1434,11 +1402,11 @@ MovimentaCimaGhost3: PUSH R1
                      MOV R1,M[R2]
                      MOV M[IO_WRITE],R1
 
+
                      DEC M[YGhost3]
                      MOV R1,M[PosGhost3]
                      SUB R1,81d
                      MOV M[PosGhost3],R1
-
                      MOV R1, M[YGhost3]
                      MOV R2, M[XGhost3]
                      SHL R1, 8d
@@ -1446,17 +1414,14 @@ MovimentaCimaGhost3: PUSH R1
                      MOV M[CURSOR], R1
                      MOV R1,'V'
                      MOV M[IO_WRITE],R1
-
                      POP R2
                      POP R1
                      RET
 
 MovimentaDireitaGhost3:PUSH R1
                        PUSH R2
-
                      MOV R1, M[YGhost3]
                      MOV R2, M[XGhost3]
-
                      SHL R1, 8d
                      OR R1,R2                  
                      MOV M[CURSOR], R1
@@ -1464,11 +1429,11 @@ MovimentaDireitaGhost3:PUSH R1
                      MOV R1,M[R2]
                      MOV M[IO_WRITE],R1                     
 
+
                      INC M[XGhost3]
                      MOV R1,M[PosGhost3]
                      ADD R1,1d
                      MOV M[PosGhost3],R1
-
                      MOV R1, M[YGhost3]
                      MOV R2, M[XGhost3]
                      SHL R1, 8d
@@ -1476,44 +1441,39 @@ MovimentaDireitaGhost3:PUSH R1
                      MOV M[CURSOR], R1
                      MOV R1,'V'
                      MOV M[IO_WRITE],R1
-
                      POP R2
                      POP R1
                      RET
 
 MovimentaEsquerdaGhost3:PUSH R1
                         PUSH R2
+                        MOV R1, M[YGhost3]
+                        MOV R2, M[XGhost3]
+                        SHL R1, 8d ;Escrever na tela espaço ou comida
+                        OR R1,R2                  
+                        MOV M[CURSOR], R1
+                        MOV R2,M[PosGhost3]
+                        MOV R1,M[R2]
+                        MOV M[IO_WRITE],R1                                  
 
-                     MOV R1, M[YGhost3]
-                     MOV R2, M[XGhost3]
 
-                     SHL R1, 8d ;Escrever na tela espaço ou comida
-                     OR R1,R2                  
-                     MOV M[CURSOR], R1
-                     MOV R2,M[PosGhost3]
-                     MOV R1,M[R2]
-                     MOV M[IO_WRITE],R1                                  
-
-                     DEC M[XGhost3]
-                     MOV R1,M[PosGhost3]
-                     DEC R1
-                     MOV M[PosGhost3],R1
-
-                     MOV R1, M[YGhost3]
-                     MOV R2, M[XGhost3]
-                     SHL R1, 8d
-                     OR R1,R2                  
-                     MOV M[CURSOR], R1
-                     MOV R1,'V'
-                     MOV M[IO_WRITE],R1
-
-                     POP R2
-                     POP R1
-                     RET
+                        DEC M[XGhost3]
+                        MOV R1,M[PosGhost3]
+                        DEC R1
+                        MOV M[PosGhost3],R1
+                        MOV R1, M[YGhost3]
+                        MOV R2, M[XGhost3]
+                        SHL R1, 8d
+                        OR R1,R2                  
+                        MOV M[CURSOR], R1
+                        MOV R1,'V'
+                        MOV M[IO_WRITE],R1
+                        POP R2
+                        POP R1
+                        RET
 
 VerificaBaixoGhost3:PUSH R1
                    PUSH R2
-                  
                    MOV R1, M[PosGhost3]
                    ADD R1, 81d
                    MOV R1, M[R1]
@@ -1536,7 +1496,6 @@ VerificaCimaGhost3:PUSH R1
 
 VerificaDireitaGhost3:PUSH R1
                    PUSH R2
-                  
                    MOV R1, M[PosGhost3]
                    INC R1
                    MOV R1, M[R1]
@@ -1548,7 +1507,6 @@ VerificaDireitaGhost3:PUSH R1
 
 VerificaEsquerdaGhost3:PUSH R1
                        PUSH R2
-                  
                        MOV R1, M[PosGhost3]
                        DEC R1
                        MOV R1, M[R1]
@@ -1568,72 +1526,71 @@ ParedeGhost3:   PUSH R5
                 RET
 
 ;------------------------------------------------------------------------------
-; GhostAI3
+; ghostInteligence3
 ; Função para perseguir o Pacman
 ;------------------------------------------------------------------------------
-GhostAI3:         PUSH R1
+ghostInteligence3:PUSH R1
                   PUSH R2
                   PUSH R3
                   PUSH R4
 
-                  ; Obter posições atuais
-                  MOV R1, M[XGhost3]      ; Fantasma X
-                  MOV R2, M[PacmanNovoX]  ; Pacman X
-                  MOV R3, M[YGhost3]      ; Fantasma Y
-                  MOV R4, M[PacmanNovoY]  ; Pacman Y
 
-                  ; Calcular diferenças
-                  SUB R2, R1  ; R2 =  (PacmanX - GhostX)
-                  SUB R4, R3  ; R4 =  (PacmanY - GhostY)
+                  MOV R1, M[XGhost3]
+                  MOV R2, M[PacmanNovoX]
+                  MOV R3, M[YGhost3]
+                  MOV R4, M[PacmanNovoY]
 
-                  ; Prioridade para movimento horizontal
+                  SUB R2, R1                    ;R2=PacmanX - GhostX
+                  SUB R4, R3                    ;R4=PacmanY - GhostY
+
+                  ;priorizar o movimento horizontal
                   CMP R2, 0
-                  JMP.Z CheckVertical3  ; Se  = 0, verifica vertical
-                  JMP.P TryRight3       ; Se  > 0, tenta direita
-                  JMP TryLeft3          ; Se  < 0, tenta esquerda
+                  JMP.Z CheckVertical3           ;se x = 0 verificar vertical
+                  JMP.P TryRight3                ;se x > 0 tenta direita
+                  JMP TryLeft3                   ;se x < 0 tenta esquerda
 
 CheckVertical3:   CMP R4, 0
-                  JMP.Z EndGhostAI3     ; Se  também = 0, não move
-                  JMP.P TryDown3        ; Se  > 0, tenta baixo
-                  JMP TryUp3           ; Se  < 0, tenta cima
+                  JMP.Z EndghostInteligence3    ;se o y também = 0  não move
+                  JMP.P TryDown3                ;se y > 0 tenta baixo
+                  JMP TryUp3                    ;se y < 0 tenta cima
 
 TryRight3:       MOV R1, RIGHT
                  MOV M[DirecaoGhost3], R1
                  CALL VerificaMovimentoGhost3
                  MOV R1, M[DirecaoGhost3]
                  CMP R1, STOP
-                 JMP.NZ EndGhostAI3
-                 JMP CheckVertical3     ; Se não pode ir para direita, tenta vertical
+                 JMP.NZ EndghostInteligence3
+                 JMP CheckVertical3             ;se nao puder ir pra direita tenta vertical
 
 TryLeft3:        MOV R1, LEFT
                  MOV M[DirecaoGhost3], R1
                  CALL VerificaMovimentoGhost3
                  MOV R1, M[DirecaoGhost3]
                  CMP R1, STOP
-                 JMP.NZ EndGhostAI3
-                 JMP CheckVertical3     ; Se não pode ir para esquerda, tenta vertical
+                 JMP.NZ EndghostInteligence3
+                 JMP CheckVertical3             ; se nao puder ir pra esquerda tenta vertical
 
 TryDown3:        MOV R1, DOWN
-                 MOV M[DirecaoGhost2], R1
+                 MOV M[DirecaoGhost3], R1
                  CALL VerificaMovimentoGhost3
                  MOV R1, M[DirecaoGhost3]
                  CMP R1, STOP
-                 JMP.NZ EndGhostAI3
-                 JMP TryRight3         ; Se não pode ir para baixo, tenta direita
+                 JMP.NZ EndghostInteligence3
+                 JMP TryRight3                   ; se nao puder ir pra baixo, tenta direita
 
 TryUp3:          MOV R1, UP
                  MOV M[DirecaoGhost3], R1
                  CALL VerificaMovimentoGhost3
                  MOV R1, M[DirecaoGhost3]
                  CMP R1, STOP
-                 JMP.NZ EndGhostAI3
-                 JMP TryLeft3           ; Se não pode ir para cima, tenta esquerda
+                 JMP.NZ EndghostInteligence3
+                 JMP TryLeft3                    ; se nao puder ir pra cima tenta esquerda
 
-EndGhostAI3:     POP R4
-                 POP R3
-                 POP R2
-                 POP R1
-                 RET
+EndghostInteligence3:       POP R4
+                            POP R3
+                            POP R2
+                            POP R1
+                            RET
 
 
 ;------------------------------------------------------------------------------
@@ -1642,15 +1599,15 @@ EndGhostAI3:     POP R4
 Random3:        PUSH    R1
                 PUSH    R2
                 MOV     R1, LSB_MASK
-                AND     R1, M[Random_var]
+                AND     R1, M[random_Var]
                 BR.Z    RandomDirection3
                 MOV     R1, RND_MASK
-                XOR     M[Random_var], R1
+                XOR     M[random_Var], R1
 
-RandomDirection3:     ROR     M[Random_var], 1
+RandomDirection3:     ROR     M[random_Var], 1
                      
                 MOV     R2, 4d
-                MOV     R1, M[ Random_var]
+                MOV     R1, M[ random_Var]
                 DIV     R1, R2                  ;Dividir por 4, para cada direção (up, down, left, right)
                 MOV     M[ DirecaoGhost3 ], R2  ;O resto da divisão é um valor entre 0 e 3
 
@@ -1663,6 +1620,12 @@ RandomDirection3:     ROR     M[Random_var], 1
 
 
 
+
+
+
+                                ;-----------------------------------------------
+                                ;                    JOGO                      -
+                                ;-----------------------------------------------
 
 
 ;------------------------------------------------------------------------------
@@ -1774,7 +1737,7 @@ Main:           ENI
 
                 CALL PrintarMapa
 
-                ; --- Inicialização Fantasma 1 ---
+                ;inicia fantasma 1
                 MOV R1, M[XGhost1]
                 MOV R2, M[YGhost1]
                 MOV R3, 81d
@@ -1784,7 +1747,7 @@ Main:           ENI
                 ADD R1, R3
                 MOV M[PosGhost1], R1
 
-                ; Desenha Ghost1 inicial
+
                 MOV R1, M[YGhost1]
                 MOV R2, M[XGhost1]
                 SHL R1, 8d
@@ -1793,17 +1756,16 @@ Main:           ENI
                 MOV R1, 'V'
                 MOV M[IO_WRITE], R1
 
-                ; --- Inicialização Fantasma 2 ---
-                MOV R1, M[XGhost2]          ; Coluna Ghost2
-                MOV R2, M[YGhost2]          ; Linha Ghost2
-                MOV R3, 81d                 ; Largura do mapa
-                MUL R2, R3                  ; Calcula offset Y
-                ADD R3, R1                  ; Adiciona offset X
-                MOV R1, L1                  ; Endereço base
-                ADD R1, R3                  ; Posição final
-                MOV M[PosGhost2], R1        ; Salva posição
+                ;inicia fantasma 2
+                MOV R1, M[XGhost2]
+                MOV R2, M[YGhost2]
+                MOV R3, 81d
+                MUL R2, R3
+                ADD R3, R1
+                MOV R1, L1
+                ADD R1, R3
+                MOV M[PosGhost2], R1
 
-                ; Desenha Ghost2 inicial
                 MOV R1, M[YGhost2]
                 MOV R2, M[XGhost2]
                 SHL R1, 8d
@@ -1812,7 +1774,7 @@ Main:           ENI
                 MOV R1, 'V'
                 MOV M[IO_WRITE], R1
 
-                ; --- Inicialização Fantasma 3 ---
+                ;inicia fantasma 3
                 MOV R1, M[XGhost3]
                 MOV R2, M[YGhost3]
                 MOV R3, 81d
@@ -1822,17 +1784,16 @@ Main:           ENI
                 ADD R1, R3
                 MOV M[PosGhost3], R1
 
-                ; Desenha Ghost3
                 MOV R1, M[YGhost3]
                 MOV R2, M[XGhost3]
                 SHL R1, 8d
                 OR R1, R2
                 MOV M[CURSOR], R1
-                MOV R1, 'X'  ; Caractere diferente
+                MOV R1, 'V'
                 MOV M[IO_WRITE], R1
 
-                ; Configura o timer
-                MOV R1, 5d
+                ;onfigura o timer
+                MOV R1, 10d
                 MOV M[TIMER_UNITS], R1
                 MOV R1, ON
                 MOV M[ACTIVATE_TIMER], R1
